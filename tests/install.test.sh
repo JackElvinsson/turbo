@@ -37,6 +37,7 @@ rm -rf "$work"
 bin_dir="$(mktemp -d)"
 config_file="$(mktemp -d)/config"
 version_file="$(mktemp -d)/version"
+default_projects_dir="$(mktemp -d)/projects"
 
 PATH="$bin_dir:$PATH" \
 TURBO_INSTALL_SOURCE="file://$fake_source" \
@@ -44,7 +45,8 @@ TURBO_REPO_URL="$fake_remote" \
 INSTALL_BIN_DIR="$bin_dir" \
 TURBO_CONFIG_FILE="$config_file" \
 TURBO_VERSION_FILE="$version_file" \
-bash "$INSTALL_BIN" <<< "/tmp/custom-projects" >/dev/null 2>&1
+DEFAULT_PROJECTS_DIR="$default_projects_dir" \
+bash "$INSTALL_BIN" >/dev/null 2>&1
 
 assert_eq "install.sh writes turbo binary" "fake-turbo" "$("$bin_dir/turbo")"
 
@@ -55,7 +57,7 @@ else
     failures=$((failures + 1))
 fi
 
-assert_eq "install.sh writes chosen projects dir" "PROJECTS_DIR=/tmp/custom-projects" "$(cat "$config_file")"
+assert_eq "install.sh writes default projects dir when no tty is available" "PROJECTS_DIR=$default_projects_dir" "$(cat "$config_file")"
 
 expected_hash="$(git ls-remote "$fake_remote" master | cut -f1)"
 assert_eq "install.sh writes version file" "$expected_hash" "$(cat "$version_file")"
@@ -67,11 +69,12 @@ TURBO_REPO_URL="$fake_remote" \
 INSTALL_BIN_DIR="$bin_dir" \
 TURBO_CONFIG_FILE="$config_file" \
 TURBO_VERSION_FILE="$version_file" \
+DEFAULT_PROJECTS_DIR="$default_projects_dir" \
 bash "$INSTALL_BIN" < /dev/null >/dev/null 2>&1
 
-assert_eq "install.sh does not overwrite existing config on update" "PROJECTS_DIR=/tmp/custom-projects" "$(cat "$config_file")"
+assert_eq "install.sh does not overwrite existing config on update" "PROJECTS_DIR=$default_projects_dir" "$(cat "$config_file")"
 
-rm -rf "$fake_remote" "$bin_dir" "$(dirname "$config_file")" "$(dirname "$version_file")"
+rm -rf "$fake_remote" "$bin_dir" "$(dirname "$config_file")" "$(dirname "$version_file")" "$(dirname "$default_projects_dir")"
 rm -f "$fake_source"
 
 echo ""
