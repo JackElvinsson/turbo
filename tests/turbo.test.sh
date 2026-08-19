@@ -77,6 +77,41 @@ rm -f "$tmp_config"
 missing_config="/tmp/turbo-test-no-such-file-$$"
 assert_eq "read_projects_dir falls back to default" "/home/jack/PhpstormProjects" "$(TURBO_CONFIG_FILE="$missing_config" bash -c 'source "'"$TURBO_BIN"'"; read_projects_dir')"
 
+# --- Task 4: check_for_update ---
+fake_remote="$(mktemp -d)"
+(cd "$fake_remote" && git init --bare -b master --quiet)
+
+work="$(mktemp -d)"
+(
+    cd "$work"
+    git init --quiet -b master
+    git config user.email test@example.com
+    git config user.name test
+    echo hello > file.txt
+    git add file.txt
+    git commit --quiet -m "first"
+    git remote add origin "$fake_remote"
+    git push --quiet origin master
+)
+rm -rf "$work"
+
+remote_hash="$(git ls-remote "$fake_remote" master | cut -f1)"
+
+version_file="$(mktemp)"
+echo "$remote_hash" > "$version_file"
+out="$(TURBO_REPO_URL="$fake_remote" TURBO_VERSION_FILE="$version_file" bash -c 'source "'"$TURBO_BIN"'"; check_for_update')"
+assert_eq "check_for_update silent when up to date" "" "$out"
+
+echo "0000000000000000000000000000000000000000" > "$version_file"
+out="$(TURBO_REPO_URL="$fake_remote" TURBO_VERSION_FILE="$version_file" bash -c 'source "'"$TURBO_BIN"'"; check_for_update <<< "y"')"
+assert_eq "check_for_update notice when outdated" "A new version of turbo is available. Run 'turbo update' to update." "$(printf '%s\n' "$out" | head -n1)"
+
+out="$(TURBO_REPO_URL="/no/such/remote-$$" TURBO_VERSION_FILE="$version_file" bash -c 'source "'"$TURBO_BIN"'"; check_for_update' 2>/dev/null)" || true
+assert_eq "check_for_update silent when remote unreachable" "" "$out"
+
+rm -rf "$fake_remote"
+rm -f "$version_file"
+
 echo ""
 echo "$failures failure(s)"
 exit "$failures"
