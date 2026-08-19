@@ -12,6 +12,16 @@ Commands:
 EOF
 }
 
+slugify() {
+    local input="$1"
+    printf '%s' "$input" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+|-+$//g'
+}
+
+validate_project_name() {
+    local input="$1"
+    [[ -n "$input" && "$input" =~ ^[A-Za-z0-9\ ]+$ ]]
+}
+
 main() {
     local cmd="${1:-help}"
     case "$cmd" in
