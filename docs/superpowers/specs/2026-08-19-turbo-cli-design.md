@@ -17,12 +17,17 @@ Out of scope for now (deliberately, per YAGNI):
 
 ## Distribution
 
-Repo: `jackelvinsson/turbo`.
+Repo: `jackelvinsson/turbo`, using the same `develop` + `master`
+branching convention as `laravel-template`: day-to-day work happens on
+`develop`, and `master` is the stable branch that gets released.
+Everything below that fetches from GitHub (the install one-liner, the
+version check) points at `master` - only merged, released work ever
+reaches machines running `turbo`.
 
 Install/update command (same command for both):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/jackelvinsson/turbo/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/jackelvinsson/turbo/master/install.sh | bash
 ```
 
 ## File layout
@@ -38,7 +43,7 @@ README.md       # what it does, the install one-liner
 0. Preflight: verify `git` and `curl` are on `PATH`. Fail fast with a
    clear message if not (both are required - `curl` to fetch the
    script itself, `git` for the version check in step 4).
-1. Download the `turbo` script from the repo's raw `main` branch to
+1. Download the `turbo` script from the repo's raw `master` branch to
    `~/.local/bin/turbo`, `chmod +x` it.
 2. If `~/.local/bin` is not on `PATH`, print a warning telling the
    user to add it (do not attempt to modify shell rc files
@@ -51,10 +56,10 @@ README.md       # what it does, the install one-liner
    - If the config file already exists, skip this prompt entirely -
      re-running the install command to update must never clobber an
      existing config.
-4. Record the current `main` commit hash into
+4. Record the current `master` commit hash into
    `~/.local/share/turbo/version`, via:
    ```bash
-   git ls-remote https://github.com/jackelvinsson/turbo main | cut -f1
+   git ls-remote https://github.com/jackelvinsson/turbo master | cut -f1
    ```
 
 ## Commands
@@ -123,8 +128,8 @@ Any unrecognized subcommand also prints usage and exits non-zero.
 
 Before the wizard starts:
 
-1. `git ls-remote https://github.com/jackelvinsson/turbo main | cut -f1`
-   to get the latest commit hash on `main`.
+1. `git ls-remote https://github.com/jackelvinsson/turbo master | cut -f1`
+   to get the latest commit hash on `master`.
 2. Compare to the hash stored in `~/.local/share/turbo/version`.
 3. If they differ: print
    `A new version of turbo is available. Run 'turbo update' to update.`
@@ -154,7 +159,7 @@ Verification is manual, end-to-end, on this machine, covering:
 - `turbo create` choosing the local-only clone path.
 - `turbo create` declining to run `setup.sh`, then running it
   manually per the printed instructions.
-- `turbo update` after a new commit lands on `main`, confirming the
+- `turbo update` after a new commit lands on `master`, confirming the
   update-check prompt appears on the next `turbo create` beforehand
   and disappears after updating.
 - Rejection paths: existing target directory, invalid project name,
