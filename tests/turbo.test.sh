@@ -68,6 +68,15 @@ else
     echo "PASS: validate_project_name rejects empty string"
 fi
 
+# --- Task 3: read_projects_dir ---
+tmp_config="$(mktemp)"
+echo 'PROJECTS_DIR=/tmp/somewhere' > "$tmp_config"
+assert_eq "read_projects_dir uses config value" "/tmp/somewhere" "$(TURBO_CONFIG_FILE="$tmp_config" bash -c 'source "'"$TURBO_BIN"'"; read_projects_dir')"
+rm -f "$tmp_config"
+
+missing_config="/tmp/turbo-test-no-such-file-$$"
+assert_eq "read_projects_dir falls back to default" "/home/jack/PhpstormProjects" "$(TURBO_CONFIG_FILE="$missing_config" bash -c 'source "'"$TURBO_BIN"'"; read_projects_dir')"
+
 echo ""
 echo "$failures failure(s)"
 exit "$failures"
