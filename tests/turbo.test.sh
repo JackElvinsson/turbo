@@ -195,6 +195,42 @@ fi
 rm -rf "$fake_template" "$tmp_projects_dir"
 rm -f "$tmp_config"
 
+# --- Task 8: cmd_create post-clone setup.sh prompt ---
+fake_template="$(mktemp -d)"
+(
+    cd "$fake_template"
+    git init --quiet -b master
+    git config user.email test@example.com
+    git config user.name test
+    cat > setup.sh <<'SETUP_EOF'
+#!/usr/bin/env bash
+echo "setup.sh ran with: $1" > setup-ran.txt
+SETUP_EOF
+    chmod +x setup.sh
+    git add setup.sh
+    git commit --quiet -m "first"
+)
+
+tmp_projects_dir="$(mktemp -d)"
+tmp_config="$(mktemp)"
+echo "PROJECTS_DIR=$tmp_projects_dir" > "$tmp_config"
+
+TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" TURBO_TEMPLATE_CLONE_URL="$fake_template" "$TURBO_BIN" create <<< $'Setup Runs\nn\ny' >/dev/null 2>&1
+
+assert_eq "cmd_create runs setup.sh with project name" "setup.sh ran with: Setup Runs" "$(cat "$tmp_projects_dir/setup-runs/setup-ran.txt" 2>/dev/null)"
+
+TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" TURBO_TEMPLATE_CLONE_URL="$fake_template" "$TURBO_BIN" create <<< $'Setup Skipped\nn\nn' >/dev/null 2>&1
+
+if [ -f "$tmp_projects_dir/setup-skipped/setup-ran.txt" ]; then
+    echo "FAIL: cmd_create should not run setup.sh when declined"
+    failures=$((failures + 1))
+else
+    echo "PASS: cmd_create should not run setup.sh when declined"
+fi
+
+rm -rf "$fake_template" "$tmp_projects_dir"
+rm -f "$tmp_config"
+
 echo ""
 echo "$failures failure(s)"
 exit "$failures"

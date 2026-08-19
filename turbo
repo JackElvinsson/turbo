@@ -134,6 +134,19 @@ cmd_create() {
             git clone --progress "$TURBO_TEMPLATE_CLONE_URL" "$target_dir"
             ;;
     esac
+
+    local run_setup
+    read -r -p "Cloning complete. Run project setup now? [Y/n] " run_setup
+    case "$run_setup" in
+        [nN]*)
+            echo "When you're ready, run:"
+            echo "  cd $target_dir"
+            echo "  ./setup.sh \"$name\""
+            ;;
+        *)
+            (cd "$target_dir" && ./setup.sh "$name")
+            ;;
+    esac
 }
 
 main() {
