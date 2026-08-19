@@ -19,8 +19,10 @@ done
 
 echo "==> Installing turbo to $INSTALL_BIN_DIR/turbo"
 mkdir -p "$INSTALL_BIN_DIR"
-curl -fsSL "$TURBO_INSTALL_SOURCE" -o "$INSTALL_BIN_DIR/turbo"
-chmod +x "$INSTALL_BIN_DIR/turbo"
+tmp="$(mktemp)"
+curl -fsSL "$TURBO_INSTALL_SOURCE" -o "$tmp"
+chmod +x "$tmp"
+mv "$tmp" "$INSTALL_BIN_DIR/turbo"
 
 case ":$PATH:" in
     *":$INSTALL_BIN_DIR:"*) ;;
@@ -32,7 +34,7 @@ esac
 if [ ! -f "$TURBO_CONFIG_FILE" ]; then
     echo "==> First-time setup"
     projects_dir="$DEFAULT_PROJECTS_DIR"
-    read -r -p "Projects directory [$DEFAULT_PROJECTS_DIR]: " projects_dir 2>/dev/null < /dev/tty || projects_dir="$DEFAULT_PROJECTS_DIR"
+    read -r -p "Projects directory [$DEFAULT_PROJECTS_DIR]: " projects_dir < /dev/tty || projects_dir="$DEFAULT_PROJECTS_DIR"
     projects_dir="${projects_dir:-$DEFAULT_PROJECTS_DIR}"
     mkdir -p "$(dirname "$TURBO_CONFIG_FILE")"
     echo "PROJECTS_DIR=$projects_dir" > "$TURBO_CONFIG_FILE"
@@ -40,7 +42,7 @@ fi
 
 echo "==> Recording installed version"
 mkdir -p "$(dirname "$TURBO_VERSION_FILE")"
-git ls-remote "$TURBO_REPO_URL" "$TURBO_REPO_BRANCH" | cut -f1 > "$TURBO_VERSION_FILE"
+version="$(git ls-remote "$TURBO_REPO_URL" "$TURBO_REPO_BRANCH" | cut -f1)" && [ -n "$version" ] && printf '%s\n' "$version" > "$TURBO_VERSION_FILE" || echo "Warning: could not record installed version (network?)." >&2
 
 echo ""
 echo "turbo installed. Run 'turbo create' to scaffold a new project."

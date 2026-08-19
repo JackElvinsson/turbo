@@ -106,6 +106,7 @@ cmd_create() {
 
     local projects_dir
     projects_dir="$(read_projects_dir)"
+    mkdir -p "$projects_dir"
 
     local name
     while true; do

@@ -42,6 +42,10 @@ assert_status "unknown command exits 1" "1" "$status"
 
 # --- Task 2: slugify / validate_project_name ---
 source "$TURBO_BIN"
+# Sourcing turbo enables `set -euo pipefail` in this shell too; turn -e back
+# off permanently so every assertion below runs and gets reported instead of
+# aborting the suite on the first non-zero command.
+set +e
 
 assert_eq "slugify basic" "my-cool-app" "$(slugify "My Cool App")"
 assert_eq "slugify collapses punctuation" "my-cool-app" "$(slugify "  My__Cool--App!!  ")"
@@ -109,7 +113,6 @@ assert_eq "check_for_update notice when outdated" "A new version of turbo is ava
 set +e
 out="$(TURBO_REPO_URL="/no/such/remote-$$" TURBO_VERSION_FILE="$version_file" bash -c 'source "'"$TURBO_BIN"'"; check_for_update' 2>/dev/null)"
 status=$?
-set -e
 assert_eq "check_for_update silent when remote unreachable" "" "$out"
 assert_status "check_for_update exits 0 when remote unreachable (not a crash)" "0" "$status"
 
@@ -124,20 +127,17 @@ echo "PROJECTS_DIR=$tmp_projects_dir" > "$tmp_config"
 set +e
 TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" "$TURBO_BIN" create <<< $'My Cool App\nn\nn' >/dev/null 2>&1
 status=$?
-set -e
 assert_status "cmd_create exits 0 for a valid, non-conflicting name" "0" "$status"
 
 set +e
 TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" "$TURBO_BIN" create <<< $'Bad/Name\nGood Name\nn\nn' >/dev/null 2>&1
 status=$?
-set -e
 assert_status "cmd_create re-prompts on invalid name then succeeds" "0" "$status"
 
 mkdir -p "$tmp_projects_dir/taken-name"
 set +e
 out="$(TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" "$TURBO_BIN" create <<< "Taken Name" 2>&1)"
 status=$?
-set -e
 assert_status "cmd_create exits 1 when target dir exists" "1" "$status"
 assert_eq "cmd_create prints clear error when target dir exists" "Error: $tmp_projects_dir/taken-name already exists." "$(printf '%s\n' "$out" | tail -n1)"
 
@@ -150,14 +150,13 @@ tmp_config="$(mktemp)"
 echo "PROJECTS_DIR=$tmp_projects_dir" > "$tmp_config"
 
 no_gh_path_dir="$(mktemp -d)"
-for tool in git curl bash tr sed cut; do
+for tool in git curl bash tr sed cut mkdir; do
     real_path="$(command -v "$tool")"
     ln -s "$real_path" "$no_gh_path_dir/$tool"
 done
 set +e
 out="$(TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" PATH="$no_gh_path_dir" "$TURBO_BIN" create <<< $'Needs Github\ny' 2>&1)"
 status=$?
-set -e
 assert_status "cmd_create exits 1 when gh missing" "1" "$status"
 assert_eq "cmd_create prints gh missing error" "Error: gh is not installed. Install it, then run 'gh auth login'." "$(printf '%s\n' "$out" | tail -n1)"
 rm -rf "$no_gh_path_dir"
@@ -183,7 +182,6 @@ echo "PROJECTS_DIR=$tmp_projects_dir" > "$tmp_config"
 
 set +e
 TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" TURBO_TEMPLATE_CLONE_URL="$fake_template" "$TURBO_BIN" create <<< $'Local Clone Project\nn' >/dev/null 2>&1
-set -e
 
 if [ -f "$tmp_projects_dir/local-clone-project/README.md" ]; then
     echo "PASS: cmd_create local clone produced project files"

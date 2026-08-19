@@ -46,7 +46,7 @@ INSTALL_BIN_DIR="$bin_dir" \
 TURBO_CONFIG_FILE="$config_file" \
 TURBO_VERSION_FILE="$version_file" \
 DEFAULT_PROJECTS_DIR="$default_projects_dir" \
-bash "$INSTALL_BIN" >/dev/null 2>&1
+setsid bash "$INSTALL_BIN" >/dev/null 2>&1
 
 assert_eq "install.sh writes turbo binary" "fake-turbo" "$("$bin_dir/turbo")"
 
@@ -70,7 +70,7 @@ INSTALL_BIN_DIR="$bin_dir" \
 TURBO_CONFIG_FILE="$config_file" \
 TURBO_VERSION_FILE="$version_file" \
 DEFAULT_PROJECTS_DIR="$default_projects_dir" \
-bash "$INSTALL_BIN" < /dev/null >/dev/null 2>&1
+setsid bash "$INSTALL_BIN" < /dev/null >/dev/null 2>&1
 
 assert_eq "install.sh does not overwrite existing config on update" "PROJECTS_DIR=$default_projects_dir" "$(cat "$config_file")"
 
