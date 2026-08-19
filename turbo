@@ -7,6 +7,7 @@ TURBO_REPO_URL="${TURBO_REPO_URL:-https://github.com/jackelvinsson/turbo}"
 TURBO_REPO_BRANCH="${TURBO_REPO_BRANCH:-master}"
 TURBO_VERSION_FILE="${TURBO_VERSION_FILE:-$HOME/.local/share/turbo/version}"
 TURBO_TEMPLATE_REPO="${TURBO_TEMPLATE_REPO:-jackelvinsson/laravel-template}"
+TURBO_TEMPLATE_CLONE_URL="${TURBO_TEMPLATE_CLONE_URL:-https://github.com/jackelvinsson/laravel-template.git}"
 
 usage() {
     cat <<'EOF'
@@ -130,7 +131,7 @@ cmd_create() {
             create_github_repo "$slug" "$projects_dir"
             ;;
         *)
-            :
+            git clone --progress "$TURBO_TEMPLATE_CLONE_URL" "$target_dir"
             ;;
     esac
 }

@@ -165,6 +165,36 @@ rm -rf "$no_gh_path_dir"
 rm -rf "$tmp_projects_dir"
 rm -f "$tmp_config"
 
+# --- Task 7: cmd_create local clone branch ---
+fake_template="$(mktemp -d)"
+(
+    cd "$fake_template"
+    git init --quiet -b master
+    git config user.email test@example.com
+    git config user.name test
+    echo readme > README.md
+    git add README.md
+    git commit --quiet -m "first"
+)
+
+tmp_projects_dir="$(mktemp -d)"
+tmp_config="$(mktemp)"
+echo "PROJECTS_DIR=$tmp_projects_dir" > "$tmp_config"
+
+set +e
+TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" TURBO_TEMPLATE_CLONE_URL="$fake_template" "$TURBO_BIN" create <<< $'Local Clone Project\nn' >/dev/null 2>&1
+set -e
+
+if [ -f "$tmp_projects_dir/local-clone-project/README.md" ]; then
+    echo "PASS: cmd_create local clone produced project files"
+else
+    echo "FAIL: cmd_create local clone produced project files"
+    failures=$((failures + 1))
+fi
+
+rm -rf "$fake_template" "$tmp_projects_dir"
+rm -f "$tmp_config"
+
 echo ""
 echo "$failures failure(s)"
 exit "$failures"
