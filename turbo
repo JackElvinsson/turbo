@@ -6,6 +6,7 @@ TURBO_DEFAULT_PROJECTS_DIR="${TURBO_DEFAULT_PROJECTS_DIR:-/home/jack/PhpstormPro
 TURBO_REPO_URL="${TURBO_REPO_URL:-https://github.com/jackelvinsson/turbo}"
 TURBO_REPO_BRANCH="${TURBO_REPO_BRANCH:-master}"
 TURBO_VERSION_FILE="${TURBO_VERSION_FILE:-$HOME/.local/share/turbo/version}"
+TURBO_TEMPLATE_REPO="${TURBO_TEMPLATE_REPO:-jackelvinsson/laravel-template}"
 
 usage() {
     cat <<'EOF'
@@ -74,6 +75,29 @@ preflight() {
     fi
 }
 
+create_github_repo() {
+    local slug="$1" projects_dir="$2"
+
+    if ! command -v gh >/dev/null 2>&1; then
+        echo "Error: gh is not installed. Install it, then run 'gh auth login'." >&2
+        exit 1
+    fi
+
+    if ! gh auth status >/dev/null 2>&1; then
+        echo "Error: gh is not authenticated. Run 'gh auth login' and try again." >&2
+        exit 1
+    fi
+
+    local visibility
+    read -r -p "Private or public? [Private/public] " visibility
+    case "$visibility" in
+        [pP]*) visibility="public" ;;
+        *) visibility="private" ;;
+    esac
+
+    (cd "$projects_dir" && gh repo create "$slug" --template "$TURBO_TEMPLATE_REPO" "--$visibility" --clone)
+}
+
 cmd_create() {
     check_for_update
     preflight
@@ -98,6 +122,17 @@ cmd_create() {
         echo "Error: $target_dir already exists." >&2
         exit 1
     fi
+
+    local create_repo
+    read -r -p "Create a GitHub repo for this? [y/N] " create_repo
+    case "$create_repo" in
+        [yY]*)
+            create_github_repo "$slug" "$projects_dir"
+            ;;
+        *)
+            :
+            ;;
+    esac
 }
 
 main() {

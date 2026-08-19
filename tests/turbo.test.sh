@@ -122,13 +122,13 @@ tmp_config="$(mktemp)"
 echo "PROJECTS_DIR=$tmp_projects_dir" > "$tmp_config"
 
 set +e
-TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" "$TURBO_BIN" create <<< "My Cool App" >/dev/null 2>&1
+TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" "$TURBO_BIN" create <<< $'My Cool App\nn\nn' >/dev/null 2>&1
 status=$?
 set -e
 assert_status "cmd_create exits 0 for a valid, non-conflicting name" "0" "$status"
 
 set +e
-TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" "$TURBO_BIN" create <<< $'Bad/Name\nGood Name' >/dev/null 2>&1
+TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" "$TURBO_BIN" create <<< $'Bad/Name\nGood Name\nn\nn' >/dev/null 2>&1
 status=$?
 set -e
 assert_status "cmd_create re-prompts on invalid name then succeeds" "0" "$status"
@@ -140,6 +140,27 @@ status=$?
 set -e
 assert_status "cmd_create exits 1 when target dir exists" "1" "$status"
 assert_eq "cmd_create prints clear error when target dir exists" "Error: $tmp_projects_dir/taken-name already exists." "$(printf '%s\n' "$out" | tail -n1)"
+
+rm -rf "$tmp_projects_dir"
+rm -f "$tmp_config"
+
+# --- Task 6: cmd_create GitHub branch ---
+tmp_projects_dir="$(mktemp -d)"
+tmp_config="$(mktemp)"
+echo "PROJECTS_DIR=$tmp_projects_dir" > "$tmp_config"
+
+no_gh_path_dir="$(mktemp -d)"
+for tool in git curl bash tr sed cut; do
+    real_path="$(command -v "$tool")"
+    ln -s "$real_path" "$no_gh_path_dir/$tool"
+done
+set +e
+out="$(TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" PATH="$no_gh_path_dir" "$TURBO_BIN" create <<< $'Needs Github\ny' 2>&1)"
+status=$?
+set -e
+assert_status "cmd_create exits 1 when gh missing" "1" "$status"
+assert_eq "cmd_create prints gh missing error" "Error: gh is not installed. Install it, then run 'gh auth login'." "$(printf '%s\n' "$out" | tail -n1)"
+rm -rf "$no_gh_path_dir"
 
 rm -rf "$tmp_projects_dir"
 rm -f "$tmp_config"
