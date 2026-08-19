@@ -231,6 +231,21 @@ fi
 rm -rf "$fake_template" "$tmp_projects_dir"
 rm -f "$tmp_config"
 
+# --- Task 10: cmd_update ---
+fake_install_script="$(mktemp)"
+cat > "$fake_install_script" <<'EOF'
+#!/usr/bin/env bash
+echo "install.sh ran" > "$UPDATE_MARKER"
+EOF
+
+marker="$(mktemp -d)/marker.txt"
+TURBO_INSTALL_URL="file://$fake_install_script" UPDATE_MARKER="$marker" "$TURBO_BIN" update >/dev/null 2>&1
+
+assert_eq "cmd_update delegates to install.sh" "install.sh ran" "$(cat "$marker" 2>/dev/null)"
+
+rm -f "$fake_install_script"
+rm -rf "$(dirname "$marker")"
+
 echo ""
 echo "$failures failure(s)"
 exit "$failures"

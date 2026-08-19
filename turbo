@@ -8,6 +8,7 @@ TURBO_REPO_BRANCH="${TURBO_REPO_BRANCH:-master}"
 TURBO_VERSION_FILE="${TURBO_VERSION_FILE:-$HOME/.local/share/turbo/version}"
 TURBO_TEMPLATE_REPO="${TURBO_TEMPLATE_REPO:-jackelvinsson/laravel-template}"
 TURBO_TEMPLATE_CLONE_URL="${TURBO_TEMPLATE_CLONE_URL:-https://github.com/jackelvinsson/laravel-template.git}"
+TURBO_INSTALL_URL="${TURBO_INSTALL_URL:-https://raw.githubusercontent.com/jackelvinsson/turbo/master/install.sh}"
 
 usage() {
     cat <<'EOF'
@@ -147,6 +148,11 @@ cmd_create() {
             (cd "$target_dir" && ./setup.sh "$name")
             ;;
     esac
+}
+
+cmd_update() {
+    echo "==> Updating turbo"
+    curl -fsSL "$TURBO_INSTALL_URL" | bash
 }
 
 main() {
