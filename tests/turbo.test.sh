@@ -116,6 +116,34 @@ assert_status "check_for_update exits 0 when remote unreachable (not a crash)" "
 rm -rf "$fake_remote"
 rm -f "$version_file"
 
+# --- Task 5: cmd_create intro steps ---
+tmp_projects_dir="$(mktemp -d)"
+tmp_config="$(mktemp)"
+echo "PROJECTS_DIR=$tmp_projects_dir" > "$tmp_config"
+
+set +e
+TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" "$TURBO_BIN" create <<< "My Cool App" >/dev/null 2>&1
+status=$?
+set -e
+assert_status "cmd_create exits 0 for a valid, non-conflicting name" "0" "$status"
+
+set +e
+TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" "$TURBO_BIN" create <<< $'Bad/Name\nGood Name' >/dev/null 2>&1
+status=$?
+set -e
+assert_status "cmd_create re-prompts on invalid name then succeeds" "0" "$status"
+
+mkdir -p "$tmp_projects_dir/taken-name"
+set +e
+out="$(TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" "$TURBO_BIN" create <<< "Taken Name" 2>&1)"
+status=$?
+set -e
+assert_status "cmd_create exits 1 when target dir exists" "1" "$status"
+assert_eq "cmd_create prints clear error when target dir exists" "Error: $tmp_projects_dir/taken-name already exists." "$(printf '%s\n' "$out" | tail -n1)"
+
+rm -rf "$tmp_projects_dir"
+rm -f "$tmp_config"
+
 echo ""
 echo "$failures failure(s)"
 exit "$failures"

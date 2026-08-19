@@ -63,6 +63,43 @@ check_for_update() {
     esac
 }
 
+preflight() {
+    local missing=()
+    command -v git >/dev/null 2>&1 || missing+=("git")
+    command -v curl >/dev/null 2>&1 || missing+=("curl")
+
+    if [ "${#missing[@]}" -gt 0 ]; then
+        echo "Missing required tool(s): ${missing[*]}" >&2
+        exit 1
+    fi
+}
+
+cmd_create() {
+    check_for_update
+    preflight
+
+    local projects_dir
+    projects_dir="$(read_projects_dir)"
+
+    local name
+    while true; do
+        read -r -p "Project name: " name
+        if validate_project_name "$name"; then
+            break
+        fi
+        echo "Project name must contain only letters, numbers, and spaces." >&2
+    done
+
+    local slug
+    slug="$(slugify "$name")"
+
+    local target_dir="$projects_dir/$slug"
+    if [ -e "$target_dir" ]; then
+        echo "Error: $target_dir already exists." >&2
+        exit 1
+    fi
+}
+
 main() {
     local cmd="${1:-help}"
     case "$cmd" in
