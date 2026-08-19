@@ -38,7 +38,7 @@ read_projects_dir() {
 
 check_for_update() {
     local remote_hash local_hash
-    remote_hash="$(git ls-remote "$TURBO_REPO_URL" "$TURBO_REPO_BRANCH" 2>/dev/null | cut -f1)"
+    remote_hash="$(git ls-remote "$TURBO_REPO_URL" "$TURBO_REPO_BRANCH" 2>/dev/null | cut -f1)" || true
 
     if [ -z "$remote_hash" ]; then
         return 0

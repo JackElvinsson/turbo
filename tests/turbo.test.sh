@@ -106,8 +106,12 @@ echo "0000000000000000000000000000000000000000" > "$version_file"
 out="$(TURBO_REPO_URL="$fake_remote" TURBO_VERSION_FILE="$version_file" bash -c 'source "'"$TURBO_BIN"'"; check_for_update <<< "y"')"
 assert_eq "check_for_update notice when outdated" "A new version of turbo is available. Run 'turbo update' to update." "$(printf '%s\n' "$out" | head -n1)"
 
-out="$(TURBO_REPO_URL="/no/such/remote-$$" TURBO_VERSION_FILE="$version_file" bash -c 'source "'"$TURBO_BIN"'"; check_for_update' 2>/dev/null)" || true
+set +e
+out="$(TURBO_REPO_URL="/no/such/remote-$$" TURBO_VERSION_FILE="$version_file" bash -c 'source "'"$TURBO_BIN"'"; check_for_update' 2>/dev/null)"
+status=$?
+set -e
 assert_eq "check_for_update silent when remote unreachable" "" "$out"
+assert_status "check_for_update exits 0 when remote unreachable (not a crash)" "0" "$status"
 
 rm -rf "$fake_remote"
 rm -f "$version_file"
