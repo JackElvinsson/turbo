@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+    cat <<'EOF'
+Usage: turbo <command>
+
+Commands:
+  create    Interactively scaffold a new project from laravel-template
+  update    Update turbo to the latest version
+  help      Show this help message
+EOF
+}
+
+main() {
+    local cmd="${1:-help}"
+    case "$cmd" in
+        create) cmd_create ;;
+        update) cmd_update ;;
+        help|-h|--help) usage ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main "$@"
+fi
