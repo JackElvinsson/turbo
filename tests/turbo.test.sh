@@ -247,6 +247,116 @@ assert_eq "cmd_update delegates to install.sh" "install.sh ran" "$(cat "$marker"
 rm -f "$fake_install_script"
 rm -rf "$(dirname "$marker")"
 
+# --- Task 11: cmd_destroy ---
+tmp_projects_dir="$(mktemp -d)"
+tmp_config="$(mktemp)"
+echo "PROJECTS_DIR=$tmp_projects_dir" > "$tmp_config"
+
+set +e
+out="$(TURBO_CONFIG_FILE="$tmp_config" "$TURBO_BIN" destroy 2>&1)"
+status=$?
+assert_status "cmd_destroy exits 1 with no project name" "1" "$status"
+assert_eq "cmd_destroy prints usage error" "Usage: turbo destroy <project>" "$(printf '%s\n' "$out" | tail -n1)"
+
+out="$(TURBO_CONFIG_FILE="$tmp_config" "$TURBO_BIN" destroy "Nope" 2>&1)"
+status=$?
+assert_status "cmd_destroy exits 1 for nonexistent project" "1" "$status"
+assert_eq "cmd_destroy prints not found error" "Error: $tmp_projects_dir/nope does not exist." "$(printf '%s\n' "$out" | tail -n1)"
+
+mkdir -p "$tmp_projects_dir/test-project"
+touch "$tmp_projects_dir/test-project/dummy.txt"
+
+out="$(TURBO_CONFIG_FILE="$tmp_config" "$TURBO_BIN" destroy "Test Project" <<< "wrong" 2>&1)"
+status=$?
+assert_status "cmd_destroy exits 1 on mismatched confirmation" "1" "$status"
+
+if [ -d "$tmp_projects_dir/test-project" ]; then
+    echo "PASS: cmd_destroy leaves directory intact on mismatched confirmation"
+else
+    echo "FAIL: cmd_destroy leaves directory intact on mismatched confirmation"
+    failures=$((failures + 1))
+fi
+
+set +e
+TURBO_CONFIG_FILE="$tmp_config" "$TURBO_BIN" destroy "Test Project" <<< "Test Project" >/dev/null 2>&1
+status=$?
+set -e
+assert_status "cmd_destroy exits 0 on matching confirmation" "0" "$status"
+
+if [ ! -d "$tmp_projects_dir/test-project" ]; then
+    echo "PASS: cmd_destroy deletes directory on matching confirmation"
+else
+    echo "FAIL: cmd_destroy deletes directory on matching confirmation"
+    failures=$((failures + 1))
+fi
+
+mkdir -p "$tmp_projects_dir/gh-project"
+(cd "$tmp_projects_dir/gh-project" && git init --quiet -b master && git remote add origin https://github.com/jackelvinsson/gh-project.git)
+
+set +e
+out="$(TURBO_CONFIG_FILE="$tmp_config" "$TURBO_BIN" destroy "gh-project" <<< $'gh-project\nn' 2>&1)"
+set -e
+if printf '%s\n' "$out" | grep -q "github.com/jackelvinsson/gh-project"; then
+    echo "PASS: cmd_destroy detects github remote"
+else
+    echo "FAIL: cmd_destroy detects github remote"
+    failures=$((failures + 1))
+fi
+
+if [ ! -d "$tmp_projects_dir/gh-project" ]; then
+    echo "PASS: cmd_destroy deletes local dir when github deletion declined"
+else
+    echo "FAIL: cmd_destroy deletes local dir when github deletion declined"
+    failures=$((failures + 1))
+fi
+
+no_gh_path_dir="$(mktemp -d)"
+for tool in git curl bash tr sed cut mkdir cat rm; do
+    real_path="$(command -v "$tool")"
+    ln -s "$real_path" "$no_gh_path_dir/$tool"
+done
+
+mkdir -p "$tmp_projects_dir/gh-project2"
+(cd "$tmp_projects_dir/gh-project2" && git init --quiet -b master && git remote add origin https://github.com/jackelvinsson/gh-project2.git)
+
+set +e
+out="$(TURBO_CONFIG_FILE="$tmp_config" PATH="$no_gh_path_dir" "$TURBO_BIN" destroy "gh-project2" <<< $'gh-project2\ny\ny' 2>&1)"
+set -e
+
+if printf '%s\n' "$out" | grep -q "gh is not installed. Cannot delete the GitHub repo."; then
+    echo "PASS: cmd_destroy warns when gh unavailable"
+else
+    echo "FAIL: cmd_destroy warns when gh unavailable"
+    failures=$((failures + 1))
+fi
+
+if [ ! -d "$tmp_projects_dir/gh-project2" ]; then
+    echo "PASS: cmd_destroy still deletes local dir when confirmed despite gh unavailable"
+else
+    echo "FAIL: cmd_destroy still deletes local dir when confirmed despite gh unavailable"
+    failures=$((failures + 1))
+fi
+
+mkdir -p "$tmp_projects_dir/gh-project3"
+(cd "$tmp_projects_dir/gh-project3" && git init --quiet -b master && git remote add origin https://github.com/jackelvinsson/gh-project3.git)
+
+set +e
+out="$(TURBO_CONFIG_FILE="$tmp_config" PATH="$no_gh_path_dir" "$TURBO_BIN" destroy "gh-project3" <<< $'gh-project3\ny\nn' 2>&1)"
+status=$?
+set -e
+assert_status "cmd_destroy exits 0 when local deletion declined after gh unavailable" "0" "$status"
+
+if [ -d "$tmp_projects_dir/gh-project3" ]; then
+    echo "PASS: cmd_destroy leaves local dir intact when declined after gh unavailable"
+else
+    echo "FAIL: cmd_destroy leaves local dir intact when declined after gh unavailable"
+    failures=$((failures + 1))
+fi
+
+rm -rf "$no_gh_path_dir"
+rm -rf "$tmp_projects_dir"
+rm -f "$tmp_config"
+
 echo ""
 echo "$failures failure(s)"
 exit "$failures"

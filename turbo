@@ -46,9 +46,10 @@ usage() {
 Usage: turbo <command>
 
 Commands:
-  create    Interactively scaffold a new project from laravel-template
-  update    Update turbo to the latest version
-  help      Show this help message
+  create          Interactively scaffold a new project from laravel-template
+  destroy <name>  Delete a project's local directory and, optionally, its GitHub repo
+  update          Update turbo to the latest version
+  help            Show this help message
 EOF
 }
 
@@ -197,6 +198,85 @@ cmd_update() {
     curl -fsSL "$TURBO_INSTALL_URL" | bash
 }
 
+cmd_destroy() {
+    local input="${1:-}"
+    if [ -z "$input" ]; then
+        echo "${C_ERR}Usage: turbo destroy <project>${C_RESET}" >&2
+        exit 1
+    fi
+
+    local slug
+    slug="$(slugify "$input")"
+
+    local projects_dir
+    projects_dir="$(read_projects_dir)"
+    local target_dir="$projects_dir/$slug"
+
+    if [ ! -d "$target_dir" ]; then
+        echo "${C_ERR}Error: $target_dir does not exist.${C_RESET}" >&2
+        exit 1
+    fi
+
+    local remote_repo=""
+    if [ -d "$target_dir/.git" ]; then
+        local remote_url
+        remote_url="$(git -C "$target_dir" remote get-url origin 2>/dev/null)" || true
+        case "$remote_url" in
+            *github.com*)
+                remote_repo="$(printf '%s' "$remote_url" | sed -E 's#.*github\.com[:/]##; s#\.git$##')"
+                ;;
+        esac
+    fi
+
+    echo "${C_WARN}This will permanently delete:${C_RESET}"
+    echo "  ${C_PURPLE}${target_dir}${C_RESET}"
+    if [ -n "$remote_repo" ]; then
+        echo "  ${C_PURPLE}github.com/${remote_repo}${C_RESET} (only if you confirm separately below)"
+    fi
+    echo ""
+
+    local confirm
+    read -r -p "Type the project name to confirm: " confirm
+    if [ "$confirm" != "$input" ]; then
+        echo "${C_ERR}Confirmation did not match, aborting.${C_RESET}" >&2
+        exit 1
+    fi
+
+    if [ -n "$remote_repo" ]; then
+        local delete_repo
+        read -r -p "Also delete the GitHub repo $remote_repo? [y/N] " delete_repo
+        case "$delete_repo" in
+            [yY]*)
+                local gh_error=""
+                if ! command -v gh >/dev/null 2>&1; then
+                    gh_error="gh is not installed."
+                elif ! gh auth status >/dev/null 2>&1; then
+                    gh_error="gh is not authenticated. Run 'gh auth login' and try again."
+                fi
+
+                if [ -n "$gh_error" ]; then
+                    echo "${C_ERR}Error: $gh_error Cannot delete the GitHub repo.${C_RESET}" >&2
+                    local continue_local
+                    read -r -p "Still delete the local project? [Y/n] " continue_local
+                    case "$continue_local" in
+                        [nN]*)
+                            echo "Aborted, nothing was deleted."
+                            exit 0
+                            ;;
+                    esac
+                else
+                    echo "${C_STEP}==> Deleting GitHub repo ${C_PURPLE}${remote_repo}${C_STEP}${C_RESET}"
+                    gh repo delete "$remote_repo" --yes
+                fi
+                ;;
+        esac
+    fi
+
+    echo "${C_STEP}==> Deleting ${C_PURPLE}${target_dir}${C_RESET}"
+    rm -rf "$target_dir"
+    echo "${C_OK}Destroyed $input${C_RESET}"
+}
+
 cmd_dev() {
     local source_path
     source_path="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
@@ -217,6 +297,7 @@ main() {
     local cmd="${1:-help}"
     case "$cmd" in
         create) cmd_create ;;
+        destroy) cmd_destroy "${2:-}" ;;
         update) cmd_update ;;
         dev) cmd_dev ;;
         help|-h|--help) usage ;;
