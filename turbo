@@ -101,7 +101,8 @@ create_github_repo() {
     fi
 
     local visibility
-    read -r -p "Private or public? [Private/public] " visibility
+    read -e -i "private" -p "Private or public? " visibility
+    visibility="${visibility:-private}"
     case "$visibility" in
         [pP]*) visibility="public" ;;
         *) visibility="private" ;;

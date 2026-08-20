@@ -44,7 +44,7 @@ esac
 if [ ! -f "$TURBO_CONFIG_FILE" ]; then
     echo "${C_STEP}==> First-time setup${C_RESET}"
     projects_dir="$DEFAULT_PROJECTS_DIR"
-    read -r -p "Projects directory [$DEFAULT_PROJECTS_DIR]: " projects_dir < /dev/tty || projects_dir="$DEFAULT_PROJECTS_DIR"
+    read -e -i "$DEFAULT_PROJECTS_DIR" -p "Projects directory: " projects_dir < /dev/tty || projects_dir="$DEFAULT_PROJECTS_DIR"
     projects_dir="${projects_dir:-$DEFAULT_PROJECTS_DIR}"
     mkdir -p "$(dirname "$TURBO_CONFIG_FILE")"
     echo "PROJECTS_DIR=$projects_dir" > "$TURBO_CONFIG_FILE"
