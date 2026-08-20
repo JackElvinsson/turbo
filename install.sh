@@ -28,10 +28,16 @@ for tool in git curl; do
 done
 
 echo "${C_STEP}==> Installing turbo to $INSTALL_BIN_DIR/turbo${C_RESET}"
+old_semver=""
+if [ -f "$INSTALL_BIN_DIR/turbo" ]; then
+    old_semver="$(grep -m1 '^TURBO_VERSION=' "$INSTALL_BIN_DIR/turbo" | cut -d'"' -f2)" || true
+fi
+
 mkdir -p "$INSTALL_BIN_DIR"
 tmp="$(mktemp)"
 curl -fsSL "$TURBO_INSTALL_SOURCE" -o "$tmp"
 chmod +x "$tmp"
+new_semver="$(grep -m1 '^TURBO_VERSION=' "$tmp" | cut -d'"' -f2)" || true
 mv "$tmp" "$INSTALL_BIN_DIR/turbo"
 
 case ":$PATH:" in
@@ -59,5 +65,12 @@ version="$(git ls-remote "$TURBO_REPO_URL" "$TURBO_REPO_BRANCH" | cut -f1)" && [
 
 if [ -z "${TURBO_SKIP_SUCCESS_MSG:-}" ]; then
     echo ""
-    echo "${C_OK}turbo $action_word. Run 'turbo create' to scaffold a new project.${C_RESET}"
+    if [ "$action_word" = "updated" ] && [ -n "$old_semver" ] && [ -n "$new_semver" ] && [ "$old_semver" != "$new_semver" ]; then
+        echo "${C_OK}turbo updated from $old_semver to $new_semver. Run 'turbo create' to scaffold a new project.${C_RESET}"
+    elif [ -n "$new_semver" ]; then
+        echo "${C_OK}turbo $action_word (v$new_semver). Run 'turbo create' to scaffold a new project.${C_RESET}"
+    else
+        echo "${C_OK}turbo $action_word. Run 'turbo create' to scaffold a new project.${C_RESET}"
+    fi
+    echo ""
 fi
