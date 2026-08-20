@@ -66,12 +66,14 @@ check_for_update() {
         return 0
     fi
 
-    echo "${C_WARN}A new version of turbo is available. Run 'turbo update' to update.${C_RESET}"
-    read -r -p "Continue anyway? [Y/n] " reply
+    echo "${C_WARN}A new version of turbo is available.${C_RESET}"
+    read -r -p "Update now? [Y/n] " reply
     case "$reply" in
         [nN]*)
-            echo "Run 'turbo update' when you're ready."
-            exit 0
+            return 0
+            ;;
+        *)
+            cmd_update
             ;;
     esac
 }
