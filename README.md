@@ -43,6 +43,8 @@ login` doesn't grant by default. If it fails with a 403, run:
 gh auth refresh -h github.com -s delete_repo
 ```
 
+and follow the intructions in the terminal.
+
 ```bash
 turbo update
 ```
