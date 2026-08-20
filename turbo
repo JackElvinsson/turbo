@@ -21,6 +21,7 @@ TURBO_VERSION_FILE="${TURBO_VERSION_FILE:-$HOME/.local/share/turbo/version}"
 TURBO_TEMPLATE_REPO="${TURBO_TEMPLATE_REPO:-jackelvinsson/laravel-template}"
 TURBO_TEMPLATE_CLONE_URL="${TURBO_TEMPLATE_CLONE_URL:-https://github.com/jackelvinsson/laravel-template.git}"
 TURBO_INSTALL_URL="${TURBO_INSTALL_URL:-https://raw.githubusercontent.com/jackelvinsson/turbo/master/install.sh}"
+TURBO_INSTALL_BIN_DIR="${TURBO_INSTALL_BIN_DIR:-$HOME/.local/bin}"
 
 print_banner() {
     echo "${C_STEP}"
@@ -187,11 +188,27 @@ cmd_update() {
     curl -fsSL "$TURBO_INSTALL_URL" | bash
 }
 
+cmd_dev() {
+    local source_path
+    source_path="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+
+    if [ "$source_path" = "$TURBO_INSTALL_BIN_DIR/turbo" ]; then
+        echo "${C_ERR}Already running from $TURBO_INSTALL_BIN_DIR/turbo, run this from your local clone instead.${C_RESET}" >&2
+        exit 1
+    fi
+
+    mkdir -p "$TURBO_INSTALL_BIN_DIR"
+    cp "$source_path" "$TURBO_INSTALL_BIN_DIR/turbo"
+    chmod +x "$TURBO_INSTALL_BIN_DIR/turbo"
+    echo "${C_OK}Installed local copy from $source_path to $TURBO_INSTALL_BIN_DIR/turbo${C_RESET}"
+}
+
 main() {
     local cmd="${1:-help}"
     case "$cmd" in
         create) cmd_create ;;
         update) cmd_update ;;
+        dev) cmd_dev ;;
         help|-h|--help) usage ;;
         *)
             usage
