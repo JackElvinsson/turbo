@@ -133,6 +133,7 @@ create_github_repo() {
         *) visibility="private" ;;
     esac
 
+    echo ""
     echo "${C_STEP}==> Creating ${C_PURPLE}${visibility}${C_STEP} GitHub repository${C_RESET}"
     (cd "$projects_dir" && gh repo create "$slug" --template "$TURBO_TEMPLATE_REPO" "--$visibility" --clone)
 }
@@ -168,6 +169,7 @@ cmd_create() {
     read -r -p "Create a GitHub repo for this? [Y/n] " create_repo
     case "$create_repo" in
         [nN]*)
+            echo ""
             echo "${C_STEP}==> Cloning ${C_PURPLE}laravel-template${C_STEP}${C_RESET}"
             git clone --progress "$TURBO_TEMPLATE_CLONE_URL" "$target_dir"
             ;;
@@ -176,21 +178,26 @@ cmd_create() {
             ;;
     esac
 
+    echo ""
     echo "${C_OK}Project ready at ${C_PURPLE}${target_dir}${C_RESET}"
+    echo ""
 
     local run_setup
     read -r -p "Run project setup now? [Y/n] " run_setup
     case "$run_setup" in
         [nN]*)
+            echo ""
             echo "When you're ready, run:"
             echo "  cd ${C_PURPLE}${target_dir}${C_RESET}"
             echo "  ./setup.sh \"$name\""
             ;;
         *)
+            echo ""
             echo "${C_STEP}==> Running project setup${C_RESET}"
             (cd "$target_dir" && ./setup.sh "$name")
             ;;
     esac
+    echo ""
 }
 
 cmd_update() {
