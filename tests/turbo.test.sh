@@ -110,8 +110,8 @@ echo "0000000000000000000000000000000000000000" > "$version_file"
 out="$(TURBO_REPO_URL="$fake_remote" TURBO_VERSION_FILE="$version_file" bash -c 'source "'"$TURBO_BIN"'"; check_for_update <<< "n"')"
 assert_eq "check_for_update notice when outdated" "A new version of turbo is available." "$(printf '%s\n' "$out" | head -n1)"
 
-out="$(TURBO_REPO_URL="$fake_remote" TURBO_VERSION_FILE="$version_file" bash -c 'source "'"$TURBO_BIN"'"; cmd_update() { echo "UPDATE_CALLED"; }; check_for_update <<< "y"')"
-assert_eq "check_for_update runs update when accepted" "UPDATE_CALLED" "$(printf '%s\n' "$out" | tail -n1)"
+out="$(TURBO_REPO_URL="$fake_remote" TURBO_VERSION_FILE="$version_file" bash -c 'source "'"$TURBO_BIN"'"; cmd_update() { echo "UPDATE_CALLED"; }; check_for_update <<< "y"' 2>/dev/null)"
+assert_eq "check_for_update runs update when accepted" "UPDATE_CALLED" "$(printf '%s\n' "$out" | sed -n '2p')"
 
 set +e
 out="$(TURBO_REPO_URL="/no/such/remote-$$" TURBO_VERSION_FILE="$version_file" bash -c 'source "'"$TURBO_BIN"'"; check_for_update' 2>/dev/null)"
