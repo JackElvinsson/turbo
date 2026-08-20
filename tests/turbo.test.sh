@@ -367,6 +367,48 @@ else
 fi
 
 rm -rf "$no_gh_path_dir"
+
+fake_gh_dir="$(mktemp -d)"
+cat > "$fake_gh_dir/gh" <<'GHEOF'
+#!/usr/bin/env bash
+if [ "$1" = "auth" ]; then exit 0; fi
+if [ "$1" = "repo" ] && [ "$2" = "delete" ]; then
+    echo "HTTP 403: Must have admin rights to Repository." >&2
+    exit 1
+fi
+GHEOF
+chmod +x "$fake_gh_dir/gh"
+
+mkdir -p "$tmp_projects_dir/gh-project4"
+(cd "$tmp_projects_dir/gh-project4" && git init --quiet -b master && git remote add origin https://github.com/jackelvinsson/gh-project4.git)
+
+set +e
+out="$(TURBO_CONFIG_FILE="$tmp_config" PATH="$fake_gh_dir:$PATH" "$TURBO_BIN" destroy "gh-project4" <<< $'gh-project4\ny\nn' 2>&1)"
+status=$?
+set -e
+assert_status "cmd_destroy exits 0 when local deletion declined after gh delete fails" "0" "$status"
+
+if [ -d "$tmp_projects_dir/gh-project4" ]; then
+    echo "PASS: cmd_destroy leaves local dir intact when declined after gh delete fails"
+else
+    echo "FAIL: cmd_destroy leaves local dir intact when declined after gh delete fails"
+    failures=$((failures + 1))
+fi
+
+set +e
+TURBO_CONFIG_FILE="$tmp_config" PATH="$fake_gh_dir:$PATH" "$TURBO_BIN" destroy "gh-project4" <<< $'gh-project4\ny\ny' >/dev/null 2>&1
+status=$?
+set -e
+assert_status "cmd_destroy exits 0 when local deletion confirmed after gh delete fails" "0" "$status"
+
+if [ ! -d "$tmp_projects_dir/gh-project4" ]; then
+    echo "PASS: cmd_destroy still deletes local dir when confirmed after gh delete fails"
+else
+    echo "FAIL: cmd_destroy still deletes local dir when confirmed after gh delete fails"
+    failures=$((failures + 1))
+fi
+
+rm -rf "$fake_gh_dir"
 rm -rf "$tmp_projects_dir"
 rm -f "$tmp_config"
 

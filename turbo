@@ -280,7 +280,17 @@ cmd_destroy() {
                     esac
                 else
                     echo "${C_STEP}==> Deleting GitHub repo ${C_PURPLE}${remote_repo}${C_STEP}${C_RESET}"
-                    gh repo delete "$remote_repo" --yes
+                    if ! gh repo delete "$remote_repo" --yes; then
+                        echo "${C_ERR}Error: failed to delete the GitHub repo.${C_RESET}" >&2
+                        local continue_local
+                        read -r -p "Still delete the local project? [Y/n] " continue_local
+                        case "$continue_local" in
+                            [nN]*)
+                                echo "Aborted, nothing further was deleted."
+                                exit 0
+                                ;;
+                        esac
+                    fi
                 fi
                 ;;
         esac
