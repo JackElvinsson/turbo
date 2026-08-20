@@ -3,6 +3,10 @@
 A personal CLI that scaffolds new projects from
 [laravel-template](https://github.com/jackelvinsson/laravel-template).
 
+## Version
+
+1.0.0
+
 ## Install / update
 
 ```bash
