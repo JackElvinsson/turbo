@@ -1,11 +1,13 @@
-# turbo
+```
+ ______   __  __     ______     ______     ______
+/\__  _\ /\ \/\ \   /\  == \   /\  == \   /\  __ \
+\/_/\ \/ \ \ \_\ \  \ \  __<   \ \  __<   \ \ \/\ \
+   \ \_\  \ \_____\  \ \_\ \_\  \ \_____\  \ \_____\
+    \/_/   \/_____/   \/_/ /_/   \/_____/   \/_____/ v1.0.1 - Scaffold Laravel projects, fast.
+```
 
 A personal CLI that scaffolds new projects from
 [laravel-template](https://github.com/jackelvinsson/laravel-template).
-
-## Version
-
-1.0.1
 
 ## Install / update
 
