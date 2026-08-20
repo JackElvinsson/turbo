@@ -29,6 +29,14 @@ projects directory, and optionally running the template's own
 `setup.sh` for you.
 
 ```bash
+turbo destroy <project>
+```
+
+Deletes a project's local directory. If it has a GitHub remote, asks
+separately whether to delete that too. Requires typing the project
+name back to confirm before anything is deleted.
+
+```bash
 turbo update
 ```
 
