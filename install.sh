@@ -54,5 +54,7 @@ echo "${C_STEP}==> Recording installed version${C_RESET}"
 mkdir -p "$(dirname "$TURBO_VERSION_FILE")"
 version="$(git ls-remote "$TURBO_REPO_URL" "$TURBO_REPO_BRANCH" | cut -f1)" && [ -n "$version" ] && printf '%s\n' "$version" > "$TURBO_VERSION_FILE" || echo "${C_WARN}Warning: could not record installed version (network?).${C_RESET}" >&2
 
-echo ""
-echo "${C_OK}turbo installed. Run 'turbo create' to scaffold a new project.${C_RESET}"
+if [ -z "${TURBO_SKIP_SUCCESS_MSG:-}" ]; then
+    echo ""
+    echo "${C_OK}turbo installed. Run 'turbo create' to scaffold a new project.${C_RESET}"
+fi

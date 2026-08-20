@@ -94,7 +94,7 @@ check_for_update() {
             return 0
             ;;
         *)
-            cmd_update
+            TURBO_SKIP_SUCCESS_MSG=1 cmd_update
             exec "$0" create
             ;;
     esac
