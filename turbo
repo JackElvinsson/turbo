@@ -138,8 +138,8 @@ create_github_repo() {
 }
 
 cmd_create() {
-    print_banner
     check_for_update
+    print_banner
     preflight
 
     local projects_dir
