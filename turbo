@@ -6,9 +6,10 @@ if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
     C_ERR=$'\033[0;31m'
     C_WARN=$'\033[0;33m'
     C_OK=$'\033[0;32m'
+    C_PURPLE=$'\033[38;5;183m'
     C_RESET=$'\033[0m'
 else
-    C_STEP='' C_ERR='' C_WARN='' C_OK='' C_RESET=''
+    C_STEP='' C_ERR='' C_WARN='' C_OK='' C_PURPLE='' C_RESET=''
 fi
 
 TURBO_VERSION="1.0.1"
@@ -24,15 +25,18 @@ TURBO_INSTALL_URL="${TURBO_INSTALL_URL:-https://raw.githubusercontent.com/jackel
 TURBO_INSTALL_BIN_DIR="${TURBO_INSTALL_BIN_DIR:-$HOME/.local/bin}"
 
 print_banner() {
-    echo "${C_STEP}"
-    cat <<'EOF'
- ______   __  __     ______     ______     ______
-/\__  _\ /\ \/\ \   /\  == \   /\  == \   /\  __ \
-\/_/\ \/ \ \ \_\ \  \ \  __<   \ \  __<   \ \ \/\ \
-   \ \_\  \ \_____\  \ \_\ \_\  \ \_____\  \ \_____\
-    \/_/   \/_____/   \/_/ /_/   \/_____/   \/_____/
-EOF
-    echo "${C_RESET}                                            v${TURBO_VERSION}"
+    local l1=' ______   __  __     ______     ______     ______'
+    local l2='/\__  _\ /\ \/\ \   /\  == \   /\  == \   /\  __ \'
+    local l3='\/_/\ \/ \ \ \_\ \  \ \  __<   \ \  __<   \ \ \/\ \'
+    local l4='   \ \_\  \ \_____\  \ \_\ \_\  \ \_____\  \ \_____\'
+    local l5='    \/_/   \/_____/   \/_/ /_/   \/_____/   \/_____/'
+
+    echo "${C_STEP}${l1}${C_RESET}"
+    echo "${C_STEP}${l2}${C_RESET}"
+    echo "${C_STEP}${l3}${C_RESET}"
+    echo "${C_STEP}${l4}${C_RESET}"
+    echo "${C_STEP}${l5} ${C_PURPLE}v${TURBO_VERSION}${C_RESET}"
+    echo "${C_STEP}    Scaffold Laravel projects, fast.${C_RESET}"
     echo ""
 }
 
