@@ -63,14 +63,21 @@ echo "${C_STEP}==> Recording installed version${C_RESET}"
 mkdir -p "$(dirname "$TURBO_VERSION_FILE")"
 version="$(git ls-remote "$TURBO_REPO_URL" "$TURBO_REPO_BRANCH" | cut -f1)" && [ -n "$version" ] && printf '%s\n' "$version" > "$TURBO_VERSION_FILE" || echo "${C_WARN}Warning: could not record installed version (network?).${C_RESET}" >&2
 
+advice=""
 if [ -z "${TURBO_SKIP_SUCCESS_MSG:-}" ]; then
+    advice=" Run 'turbo create' to scaffold a new project."
+fi
+
+if [ "$action_word" = "updated" ] && [ -n "$old_semver" ] && [ -n "$new_semver" ] && [ "$old_semver" != "$new_semver" ]; then
     echo ""
-    if [ "$action_word" = "updated" ] && [ -n "$old_semver" ] && [ -n "$new_semver" ] && [ "$old_semver" != "$new_semver" ]; then
-        echo "${C_OK}turbo updated from $old_semver to $new_semver. Run 'turbo create' to scaffold a new project.${C_RESET}"
-    elif [ -n "$new_semver" ]; then
-        echo "${C_OK}turbo $action_word (v$new_semver). Run 'turbo create' to scaffold a new project.${C_RESET}"
+    echo "${C_OK}turbo updated from $old_semver to $new_semver.${advice}${C_RESET}"
+    echo ""
+elif [ -z "${TURBO_SKIP_SUCCESS_MSG:-}" ]; then
+    echo ""
+    if [ -n "$new_semver" ]; then
+        echo "${C_OK}turbo $action_word (v$new_semver).${advice}${C_RESET}"
     else
-        echo "${C_OK}turbo $action_word. Run 'turbo create' to scaffold a new project.${C_RESET}"
+        echo "${C_OK}turbo $action_word.${advice}${C_RESET}"
     fi
     echo ""
 fi
