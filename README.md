@@ -36,6 +36,13 @@ Deletes a project's local directory. If it has a GitHub remote, asks
 separately whether to delete that too. Requires typing the project
 name back to confirm before anything is deleted.
 
+Deleting a GitHub repo needs the `delete_repo` scope, which `gh auth
+login` doesn't grant by default. If it fails with a 403, run:
+
+```bash
+gh auth refresh -h github.com -s delete_repo
+```
+
 ```bash
 turbo update
 ```
