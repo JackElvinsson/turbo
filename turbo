@@ -226,6 +226,13 @@ cmd_destroy() {
                 remote_repo="$(printf '%s' "$remote_url" | sed -E 's#.*github\.com[:/]##; s#\.git$##')"
                 ;;
         esac
+
+        # A project cloned via the "local clone, no GitHub repo" path in
+        # cmd_create has origin pointing at the template itself, not a repo
+        # created for this project. Never treat that as this project's repo.
+        if [ "$remote_repo" = "$TURBO_TEMPLATE_REPO" ]; then
+            remote_repo=""
+        fi
     fi
 
     echo "${C_WARN}This will permanently delete:${C_RESET}"

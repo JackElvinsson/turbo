@@ -310,6 +310,19 @@ else
     failures=$((failures + 1))
 fi
 
+mkdir -p "$tmp_projects_dir/local-clone-project"
+(cd "$tmp_projects_dir/local-clone-project" && git init --quiet -b master && git remote add origin "https://github.com/jackelvinsson/laravel-template.git")
+
+set +e
+out="$(TURBO_CONFIG_FILE="$tmp_config" "$TURBO_BIN" destroy "local-clone-project" <<< "wrong" 2>&1)"
+set -e
+if printf '%s\n' "$out" | grep -q "github.com"; then
+    echo "FAIL: cmd_destroy does not offer to delete template repo for local clones"
+    failures=$((failures + 1))
+else
+    echo "PASS: cmd_destroy does not offer to delete template repo for local clones"
+fi
+
 no_gh_path_dir="$(mktemp -d)"
 for tool in git curl bash tr sed cut mkdir cat rm; do
     real_path="$(command -v "$tool")"
