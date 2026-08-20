@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
+    C_STEP=$'\033[1;36m'
+    C_ERR=$'\033[0;31m'
+    C_WARN=$'\033[0;33m'
+    C_OK=$'\033[0;32m'
+    C_RESET=$'\033[0m'
+else
+    C_STEP='' C_ERR='' C_WARN='' C_OK='' C_RESET=''
+fi
+
 TURBO_CONFIG_FILE="${TURBO_CONFIG_FILE:-$HOME/.config/turbo/config}"
 TURBO_DEFAULT_PROJECTS_DIR="${TURBO_DEFAULT_PROJECTS_DIR:-/home/jack/PhpstormProjects}"
 TURBO_REPO_URL="${TURBO_REPO_URL:-https://github.com/jackelvinsson/turbo}"
@@ -56,7 +66,7 @@ check_for_update() {
         return 0
     fi
 
-    echo "A new version of turbo is available. Run 'turbo update' to update."
+    echo "${C_WARN}A new version of turbo is available. Run 'turbo update' to update.${C_RESET}"
     read -r -p "Continue anyway? [Y/n] " reply
     case "$reply" in
         [nN]*)
@@ -72,7 +82,7 @@ preflight() {
     command -v curl >/dev/null 2>&1 || missing+=("curl")
 
     if [ "${#missing[@]}" -gt 0 ]; then
-        echo "Missing required tool(s): ${missing[*]}" >&2
+        echo "${C_ERR}Missing required tool(s): ${missing[*]}${C_RESET}" >&2
         exit 1
     fi
 }
@@ -81,12 +91,12 @@ create_github_repo() {
     local slug="$1" projects_dir="$2"
 
     if ! command -v gh >/dev/null 2>&1; then
-        echo "Error: gh is not installed. Install it, then run 'gh auth login'." >&2
+        echo "${C_ERR}Error: gh is not installed. Install it, then run 'gh auth login'.${C_RESET}" >&2
         exit 1
     fi
 
     if ! gh auth status >/dev/null 2>&1; then
-        echo "Error: gh is not authenticated. Run 'gh auth login' and try again." >&2
+        echo "${C_ERR}Error: gh is not authenticated. Run 'gh auth login' and try again.${C_RESET}" >&2
         exit 1
     fi
 
@@ -114,7 +124,7 @@ cmd_create() {
         if validate_project_name "$name"; then
             break
         fi
-        echo "Project name must contain only letters, numbers, and spaces." >&2
+        echo "${C_ERR}Project name must contain only letters, numbers, and spaces.${C_RESET}" >&2
     done
 
     local slug
@@ -122,7 +132,7 @@ cmd_create() {
 
     local target_dir="$projects_dir/$slug"
     if [ -e "$target_dir" ]; then
-        echo "Error: $target_dir already exists." >&2
+        echo "${C_ERR}Error: $target_dir already exists.${C_RESET}" >&2
         exit 1
     fi
 
@@ -152,7 +162,7 @@ cmd_create() {
 }
 
 cmd_update() {
-    echo "==> Updating turbo"
+    echo "${C_STEP}==> Updating turbo${C_RESET}"
     curl -fsSL "$TURBO_INSTALL_URL" | bash
 }
 
