@@ -41,7 +41,10 @@ case ":$PATH:" in
         ;;
 esac
 
-if [ ! -f "$TURBO_CONFIG_FILE" ]; then
+if [ -f "$TURBO_CONFIG_FILE" ]; then
+    action_word="updated"
+else
+    action_word="installed"
     echo "${C_STEP}==> First-time setup${C_RESET}"
     projects_dir="$DEFAULT_PROJECTS_DIR"
     read -e -i "$DEFAULT_PROJECTS_DIR" -p "Projects directory: " projects_dir < /dev/tty || projects_dir="$DEFAULT_PROJECTS_DIR"
@@ -56,5 +59,5 @@ version="$(git ls-remote "$TURBO_REPO_URL" "$TURBO_REPO_BRANCH" | cut -f1)" && [
 
 if [ -z "${TURBO_SKIP_SUCCESS_MSG:-}" ]; then
     echo ""
-    echo "${C_OK}turbo installed. Run 'turbo create' to scaffold a new project.${C_RESET}"
+    echo "${C_OK}turbo $action_word. Run 'turbo create' to scaffold a new project.${C_RESET}"
 fi
