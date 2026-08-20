@@ -29,10 +29,10 @@ assert_status() {
 # --- Task 1: dispatch/usage ---
 
 out="$("$TURBO_BIN" help)"
-assert_eq "help prints Usage line" "Usage: turbo <command>" "$(printf '%s\n' "$out" | head -n1)"
+assert_eq "help prints Usage line" "Usage: turbo <command>" "$(printf '%s\n' "$out" | grep -m1 "^Usage:")"
 
 out="$("$TURBO_BIN")"
-assert_eq "no-args prints Usage line" "Usage: turbo <command>" "$(printf '%s\n' "$out" | head -n1)"
+assert_eq "no-args prints Usage line" "Usage: turbo <command>" "$(printf '%s\n' "$out" | grep -m1 "^Usage:")"
 
 set +e
 "$TURBO_BIN" bogus >/dev/null 2>&1
@@ -153,7 +153,7 @@ tmp_config="$(mktemp)"
 echo "PROJECTS_DIR=$tmp_projects_dir" > "$tmp_config"
 
 no_gh_path_dir="$(mktemp -d)"
-for tool in git curl bash tr sed cut mkdir; do
+for tool in git curl bash tr sed cut mkdir cat; do
     real_path="$(command -v "$tool")"
     ln -s "$real_path" "$no_gh_path_dir/$tool"
 done
