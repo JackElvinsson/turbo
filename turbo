@@ -11,6 +11,8 @@ else
     C_STEP='' C_ERR='' C_WARN='' C_OK='' C_RESET=''
 fi
 
+TURBO_VERSION="1.0.1"
+
 TURBO_CONFIG_FILE="${TURBO_CONFIG_FILE:-$HOME/.config/turbo/config}"
 TURBO_DEFAULT_PROJECTS_DIR="${TURBO_DEFAULT_PROJECTS_DIR:-/home/jack/PhpstormProjects}"
 TURBO_REPO_URL="${TURBO_REPO_URL:-https://github.com/jackelvinsson/turbo}"
@@ -20,7 +22,21 @@ TURBO_TEMPLATE_REPO="${TURBO_TEMPLATE_REPO:-jackelvinsson/laravel-template}"
 TURBO_TEMPLATE_CLONE_URL="${TURBO_TEMPLATE_CLONE_URL:-https://github.com/jackelvinsson/laravel-template.git}"
 TURBO_INSTALL_URL="${TURBO_INSTALL_URL:-https://raw.githubusercontent.com/jackelvinsson/turbo/master/install.sh}"
 
+print_banner() {
+    echo "${C_STEP}"
+    cat <<'EOF'
+ ______   __  __     ______     ______     ______
+/\__  _\ /\ \/\ \   /\  == \   /\  == \   /\  __ \
+\/_/\ \/ \ \ \_\ \  \ \  __<   \ \  __<   \ \ \/\ \
+   \ \_\  \ \_____\  \ \_\ \_\  \ \_____\  \ \_____\
+    \/_/   \/_____/   \/_/ /_/   \/_____/   \/_____/
+EOF
+    echo "${C_RESET}                                            v${TURBO_VERSION}"
+    echo ""
+}
+
 usage() {
+    print_banner
     cat <<'EOF'
 Usage: turbo <command>
 
@@ -115,6 +131,7 @@ create_github_repo() {
 }
 
 cmd_create() {
+    print_banner
     check_for_update
     preflight
 
