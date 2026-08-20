@@ -3,7 +3,7 @@
 /\__  _\ /\ \/\ \   /\  == \   /\  == \   /\  __ \
 \/_/\ \/ \ \ \_\ \  \ \  __<   \ \  __<   \ \ \/\ \
    \ \_\  \ \_____\  \ \_\ \_\  \ \_____\  \ \_____\
-    \/_/   \/_____/   \/_/ /_/   \/_____/   \/_____/ v1.0.3 - Scaffold Laravel projects, fast.
+    \/_/   \/_____/   \/_/ /_/   \/_____/   \/_____/ v1.1.0 - Scaffold Laravel projects, fast.
 ```
 
 A personal CLI that scaffolds new projects from
