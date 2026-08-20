@@ -138,13 +138,13 @@ cmd_create() {
     fi
 
     local create_repo
-    read -r -p "Create a GitHub repo for this? [y/N] " create_repo
+    read -r -p "Create a GitHub repo for this? [Y/n] " create_repo
     case "$create_repo" in
-        [yY]*)
-            create_github_repo "$slug" "$projects_dir"
+        [nN]*)
+            git clone --progress "$TURBO_TEMPLATE_CLONE_URL" "$target_dir"
             ;;
         *)
-            git clone --progress "$TURBO_TEMPLATE_CLONE_URL" "$target_dir"
+            create_github_repo "$slug" "$projects_dir"
             ;;
     esac
 
