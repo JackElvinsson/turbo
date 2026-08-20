@@ -129,7 +129,7 @@ create_github_repo() {
     read -e -i "private" -p "Private or public? " visibility
     visibility="${visibility:-private}"
     case "$visibility" in
-        [pP]*) visibility="public" ;;
+        [pP][uU]*) visibility="public" ;;
         *) visibility="private" ;;
     esac
 
