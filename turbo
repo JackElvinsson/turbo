@@ -12,7 +12,7 @@ else
     C_STEP='' C_ERR='' C_WARN='' C_OK='' C_PURPLE='' C_RESET=''
 fi
 
-TURBO_VERSION="1.2.0"
+TURBO_VERSION="1.2.1"
 
 TURBO_CONFIG_FILE="${TURBO_CONFIG_FILE:-$HOME/.config/turbo/config}"
 TURBO_DEFAULT_PROJECTS_DIR="${TURBO_DEFAULT_PROJECTS_DIR:-/home/jack/PhpstormProjects}"
