@@ -7,7 +7,8 @@
 ```
 
 A personal CLI that scaffolds new projects from
-[laravel-template-vue](https://github.com/jackelvinsson/laravel-template-vue).
+[laravel-template-vue](https://github.com/jackelvinsson/laravel-template-vue) or
+[laravel-template-react](https://github.com/jackelvinsson/laravel-template-react).
 
 ## Install / update
 
@@ -23,10 +24,10 @@ Running the same command again updates turbo to the latest version.
 turbo create
 ```
 
-Walks through: a project name, optionally creating a GitHub repo
-(private or public) via `gh`, cloning `laravel-template-vue` into your
-projects directory, and optionally running the template's own
-`setup.sh` for you.
+Walks through: a project name, a template choice (`vue` or `react`),
+optionally creating a GitHub repo (private or public) via `gh`, cloning
+the chosen template into your projects directory, and optionally
+running the template's own `setup.sh` for you.
 
 ```bash
 turbo destroy <project>

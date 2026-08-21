@@ -128,12 +128,12 @@ tmp_config="$(mktemp)"
 echo "PROJECTS_DIR=$tmp_projects_dir" > "$tmp_config"
 
 set +e
-TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" "$TURBO_BIN" create <<< $'My Cool App\nn\nn' >/dev/null 2>&1
+TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" "$TURBO_BIN" create <<< $'My Cool App\n\nn\nn' >/dev/null 2>&1
 status=$?
 assert_status "cmd_create exits 0 for a valid, non-conflicting name" "0" "$status"
 
 set +e
-TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" "$TURBO_BIN" create <<< $'Bad/Name\nGood Name\nn\nn' >/dev/null 2>&1
+TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" "$TURBO_BIN" create <<< $'Bad/Name\nGood Name\n\nn\nn' >/dev/null 2>&1
 status=$?
 assert_status "cmd_create re-prompts on invalid name then succeeds" "0" "$status"
 
@@ -158,7 +158,7 @@ for tool in git curl bash tr sed cut mkdir cat; do
     ln -s "$real_path" "$no_gh_path_dir/$tool"
 done
 set +e
-out="$(TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" PATH="$no_gh_path_dir" "$TURBO_BIN" create <<< $'Needs Github\ny' 2>&1)"
+out="$(TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" PATH="$no_gh_path_dir" "$TURBO_BIN" create <<< $'Needs Github\n\ny' 2>&1)"
 status=$?
 assert_status "cmd_create exits 1 when gh missing" "1" "$status"
 assert_eq "cmd_create prints gh missing error" "Error: gh is not installed. Install it, then run 'gh auth login'." "$(printf '%s\n' "$out" | tail -n1)"
@@ -184,7 +184,7 @@ tmp_config="$(mktemp)"
 echo "PROJECTS_DIR=$tmp_projects_dir" > "$tmp_config"
 
 set +e
-TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" TURBO_TEMPLATE_CLONE_URL="$fake_template" "$TURBO_BIN" create <<< $'Local Clone Project\nn' >/dev/null 2>&1
+TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" TURBO_TEMPLATE_CLONE_URL_VUE="$fake_template" "$TURBO_BIN" create <<< $'Local Clone Project\n\nn' >/dev/null 2>&1
 
 if [ -f "$tmp_projects_dir/local-clone-project/README.md" ]; then
     echo "PASS: cmd_create local clone produced project files"
@@ -216,11 +216,11 @@ tmp_projects_dir="$(mktemp -d)"
 tmp_config="$(mktemp)"
 echo "PROJECTS_DIR=$tmp_projects_dir" > "$tmp_config"
 
-TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" TURBO_TEMPLATE_CLONE_URL="$fake_template" "$TURBO_BIN" create <<< $'Setup Runs\nn\ny' >/dev/null 2>&1
+TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" TURBO_TEMPLATE_CLONE_URL_VUE="$fake_template" "$TURBO_BIN" create <<< $'Setup Runs\n\nn\ny' >/dev/null 2>&1
 
 assert_eq "cmd_create runs setup.sh with project name" "setup.sh ran with: Setup Runs" "$(cat "$tmp_projects_dir/setup-runs/setup-ran.txt" 2>/dev/null)"
 
-TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" TURBO_TEMPLATE_CLONE_URL="$fake_template" "$TURBO_BIN" create <<< $'Setup Skipped\nn\nn' >/dev/null 2>&1
+TURBO_CONFIG_FILE="$tmp_config" TURBO_REPO_URL="/no/such/remote-$$" TURBO_TEMPLATE_CLONE_URL_VUE="$fake_template" "$TURBO_BIN" create <<< $'Setup Skipped\n\nn\nn' >/dev/null 2>&1
 
 if [ -f "$tmp_projects_dir/setup-skipped/setup-ran.txt" ]; then
     echo "FAIL: cmd_create should not run setup.sh when declined"

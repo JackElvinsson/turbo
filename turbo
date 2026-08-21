@@ -19,8 +19,10 @@ TURBO_DEFAULT_PROJECTS_DIR="${TURBO_DEFAULT_PROJECTS_DIR:-/home/jack/PhpstormPro
 TURBO_REPO_URL="${TURBO_REPO_URL:-https://github.com/jackelvinsson/turbo}"
 TURBO_REPO_BRANCH="${TURBO_REPO_BRANCH:-master}"
 TURBO_VERSION_FILE="${TURBO_VERSION_FILE:-$HOME/.local/share/turbo/version}"
-TURBO_TEMPLATE_REPO="${TURBO_TEMPLATE_REPO:-jackelvinsson/laravel-template-vue}"
-TURBO_TEMPLATE_CLONE_URL="${TURBO_TEMPLATE_CLONE_URL:-https://github.com/jackelvinsson/laravel-template-vue.git}"
+TURBO_TEMPLATE_REPO_VUE="${TURBO_TEMPLATE_REPO_VUE:-jackelvinsson/laravel-template-vue}"
+TURBO_TEMPLATE_CLONE_URL_VUE="${TURBO_TEMPLATE_CLONE_URL_VUE:-https://github.com/jackelvinsson/laravel-template-vue.git}"
+TURBO_TEMPLATE_REPO_REACT="${TURBO_TEMPLATE_REPO_REACT:-jackelvinsson/laravel-template-react}"
+TURBO_TEMPLATE_CLONE_URL_REACT="${TURBO_TEMPLATE_CLONE_URL_REACT:-https://github.com/jackelvinsson/laravel-template-react.git}"
 TURBO_INSTALL_URL="${TURBO_INSTALL_URL:-https://raw.githubusercontent.com/jackelvinsson/turbo/master/install.sh}"
 TURBO_INSTALL_BIN_DIR="${TURBO_INSTALL_BIN_DIR:-$HOME/.local/bin}"
 
@@ -113,7 +115,7 @@ preflight() {
 }
 
 create_github_repo() {
-    local slug="$1" projects_dir="$2"
+    local slug="$1" projects_dir="$2" template_repo="$3"
 
     if ! command -v gh >/dev/null 2>&1; then
         echo "${C_ERR}Error: gh is not installed. Install it, then run 'gh auth login'.${C_RESET}" >&2
@@ -135,7 +137,7 @@ create_github_repo() {
 
     echo ""
     echo "${C_STEP}==> Creating ${C_PURPLE}${visibility}${C_STEP} GitHub repository${C_RESET}"
-    (cd "$projects_dir" && gh repo create "$slug" --template "$TURBO_TEMPLATE_REPO" "--$visibility" --clone)
+    (cd "$projects_dir" && gh repo create "$slug" --template "$template_repo" "--$visibility" --clone)
 }
 
 cmd_create() {
@@ -165,16 +167,33 @@ cmd_create() {
         exit 1
     fi
 
+    local template
+    read -e -i "vue" -p "Template (vue/react): " template
+    template="${template:-vue}"
+    local template_repo template_clone_url template_name
+    case "$template" in
+        [rR]*)
+            template_repo="$TURBO_TEMPLATE_REPO_REACT"
+            template_clone_url="$TURBO_TEMPLATE_CLONE_URL_REACT"
+            template_name="laravel-template-react"
+            ;;
+        *)
+            template_repo="$TURBO_TEMPLATE_REPO_VUE"
+            template_clone_url="$TURBO_TEMPLATE_CLONE_URL_VUE"
+            template_name="laravel-template-vue"
+            ;;
+    esac
+
     local create_repo
     read -r -p "Create a GitHub repo for this? [Y/n] " create_repo
     case "$create_repo" in
         [nN]*)
             echo ""
-            echo "${C_STEP}==> Cloning ${C_PURPLE}laravel-template-vue${C_STEP}${C_RESET}"
-            git clone --progress "$TURBO_TEMPLATE_CLONE_URL" "$target_dir"
+            echo "${C_STEP}==> Cloning ${C_PURPLE}${template_name}${C_STEP}${C_RESET}"
+            git clone --progress "$template_clone_url" "$target_dir"
             ;;
         *)
-            create_github_repo "$slug" "$projects_dir"
+            create_github_repo "$slug" "$projects_dir" "$template_repo"
             ;;
     esac
 
@@ -238,7 +257,7 @@ cmd_destroy() {
         # A project cloned via the "local clone, no GitHub repo" path in
         # cmd_create has origin pointing at the template itself, not a repo
         # created for this project. Never treat that as this project's repo.
-        if [ "$remote_repo" = "$TURBO_TEMPLATE_REPO" ]; then
+        if [ "$remote_repo" = "$TURBO_TEMPLATE_REPO_VUE" ] || [ "$remote_repo" = "$TURBO_TEMPLATE_REPO_REACT" ]; then
             remote_repo=""
         fi
     fi
