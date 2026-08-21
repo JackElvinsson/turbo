@@ -48,10 +48,11 @@ usage() {
 Usage: turbo <command>
 
 Commands:
-  create          Interactively scaffold a new project from laravel-template-vue
+  create          Interactively scaffold a new project (Vue or React template)
   destroy <name>  Delete a project's local directory and, optionally, its GitHub repo
   update          Update turbo to the latest version
   help            Show this help message
+
 EOF
 }
 
@@ -127,6 +128,7 @@ create_github_repo() {
         exit 1
     fi
 
+    echo ""
     local visibility
     read -e -i "private" -p "Private or public? " visibility
     visibility="${visibility:-private}"
@@ -184,6 +186,7 @@ cmd_create() {
             ;;
     esac
 
+    echo ""
     local create_repo
     read -r -p "Create a GitHub repo for this? [Y/n] " create_repo
     case "$create_repo" in
@@ -277,6 +280,7 @@ cmd_destroy() {
     fi
 
     if [ -n "$remote_repo" ]; then
+        echo ""
         local delete_repo
         read -r -p "Also delete the GitHub repo $remote_repo? [y/N] " delete_repo
         case "$delete_repo" in
