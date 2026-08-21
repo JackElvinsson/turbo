@@ -350,6 +350,47 @@ cmd_dev() {
     echo ""
 }
 
+cmd_boost() {
+    local rocket=(
+        "     /\\"
+        "    /  \\"
+        "   |    |"
+        "   | () |"
+        "   |    |"
+        "  /|    |\\"
+        " /_|____|_\\"
+    )
+    local flames=(
+        "     ||"
+        "    |  |"
+        "   | || |"
+        "    |  |"
+    )
+    local total_lines=$(( ${#rocket[@]} + 1 ))
+
+    echo ""
+    local n
+    for n in 3 2 1; do
+        printf '\r%s%s...%s\033[K' "$C_PURPLE" "$n" "$C_RESET"
+        sleep 0.4
+    done
+    printf '\r%sLiftoff.%s\033[K\n\n' "$C_OK" "$C_RESET"
+
+    local frame line
+    for frame in $(seq 1 16); do
+        for line in "${rocket[@]}"; do
+            printf '%s%s%s\033[K\n' "$C_PURPLE" "$line" "$C_RESET"
+        done
+        printf '%s%s%s\033[K\n' "$C_WARN" "${flames[$((frame % 4))]}" "$C_RESET"
+        sleep 0.08
+        printf '\033[%dA' "$total_lines"
+    done
+    printf '\033[%dB' "$total_lines"
+    echo ""
+    echo "${C_OK}Turbo boost engaged. You're all set.${C_RESET}"
+    echo ""
+}
+
 main() {
     local cmd="${1:-help}"
     case "$cmd" in
@@ -357,6 +398,7 @@ main() {
         destroy) cmd_destroy "${2:-}" ;;
         update) cmd_update ;;
         dev) cmd_dev ;;
+        boost) cmd_boost ;;
         help|-h|--help) usage ;;
         *)
             usage
