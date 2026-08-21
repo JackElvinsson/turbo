@@ -19,8 +19,8 @@ TURBO_DEFAULT_PROJECTS_DIR="${TURBO_DEFAULT_PROJECTS_DIR:-/home/jack/PhpstormPro
 TURBO_REPO_URL="${TURBO_REPO_URL:-https://github.com/jackelvinsson/turbo}"
 TURBO_REPO_BRANCH="${TURBO_REPO_BRANCH:-master}"
 TURBO_VERSION_FILE="${TURBO_VERSION_FILE:-$HOME/.local/share/turbo/version}"
-TURBO_TEMPLATE_REPO="${TURBO_TEMPLATE_REPO:-jackelvinsson/laravel-template}"
-TURBO_TEMPLATE_CLONE_URL="${TURBO_TEMPLATE_CLONE_URL:-https://github.com/jackelvinsson/laravel-template.git}"
+TURBO_TEMPLATE_REPO="${TURBO_TEMPLATE_REPO:-jackelvinsson/laravel-template-vue}"
+TURBO_TEMPLATE_CLONE_URL="${TURBO_TEMPLATE_CLONE_URL:-https://github.com/jackelvinsson/laravel-template-vue.git}"
 TURBO_INSTALL_URL="${TURBO_INSTALL_URL:-https://raw.githubusercontent.com/jackelvinsson/turbo/master/install.sh}"
 TURBO_INSTALL_BIN_DIR="${TURBO_INSTALL_BIN_DIR:-$HOME/.local/bin}"
 
@@ -46,7 +46,7 @@ usage() {
 Usage: turbo <command>
 
 Commands:
-  create          Interactively scaffold a new project from laravel-template
+  create          Interactively scaffold a new project from laravel-template-vue
   destroy <name>  Delete a project's local directory and, optionally, its GitHub repo
   update          Update turbo to the latest version
   help            Show this help message
@@ -170,7 +170,7 @@ cmd_create() {
     case "$create_repo" in
         [nN]*)
             echo ""
-            echo "${C_STEP}==> Cloning ${C_PURPLE}laravel-template${C_STEP}${C_RESET}"
+            echo "${C_STEP}==> Cloning ${C_PURPLE}laravel-template-vue${C_STEP}${C_RESET}"
             git clone --progress "$TURBO_TEMPLATE_CLONE_URL" "$target_dir"
             ;;
         *)

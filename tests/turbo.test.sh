@@ -311,7 +311,7 @@ else
 fi
 
 mkdir -p "$tmp_projects_dir/local-clone-project"
-(cd "$tmp_projects_dir/local-clone-project" && git init --quiet -b master && git remote add origin "https://github.com/jackelvinsson/laravel-template.git")
+(cd "$tmp_projects_dir/local-clone-project" && git init --quiet -b master && git remote add origin "https://github.com/jackelvinsson/laravel-template-vue.git")
 
 set +e
 out="$(TURBO_CONFIG_FILE="$tmp_config" "$TURBO_BIN" destroy "local-clone-project" <<< "wrong" 2>&1)"

@@ -7,7 +7,7 @@
 ```
 
 A personal CLI that scaffolds new projects from
-[laravel-template](https://github.com/jackelvinsson/laravel-template).
+[laravel-template-vue](https://github.com/jackelvinsson/laravel-template-vue).
 
 ## Install / update
 
@@ -24,7 +24,7 @@ turbo create
 ```
 
 Walks through: a project name, optionally creating a GitHub repo
-(private or public) via `gh`, cloning `laravel-template` into your
+(private or public) via `gh`, cloning `laravel-template-vue` into your
 projects directory, and optionally running the template's own
 `setup.sh` for you.
 
